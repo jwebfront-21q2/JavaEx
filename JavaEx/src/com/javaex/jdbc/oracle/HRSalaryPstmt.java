@@ -1,10 +1,6 @@
 package com.javaex.jdbc.oracle;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Scanner;
 
 public class HRSalaryPstmt {
@@ -12,7 +8,7 @@ public class HRSalaryPstmt {
 	public static void main(String[] args) {
 		String dburl = "jdbc:oracle:thin:@localhost:1521:xe";
 		Connection conn = null;
-		Statement stmt = null;
+		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
 		Scanner scanner = new Scanner(System.in);
@@ -35,10 +31,14 @@ public class HRSalaryPstmt {
 			
 			String sql = "SELECT first_name || ' ' || last_name as name, salary " +
 					" FROM employees " +
-					" WHERE salary BETWEEN " + minSalary + " AND " + maxSalary + 
+					" WHERE salary BETWEEN ? AND ? " + 
 					" ORDER BY salary";
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery(sql);
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, minSalary);
+			pstmt.setInt(2, maxSalary);
+			
+			rs = pstmt.executeQuery();
 			
 			while(rs.next()) {
 				System.out.printf("%s\t%d%n", 
@@ -52,7 +52,7 @@ public class HRSalaryPstmt {
 		} finally {
 			try {
 				rs.close();
-				stmt.close();
+				pstmt.close();
 				conn.close();
 			} catch (Exception e) {
 				e.printStackTrace();
